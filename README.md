@@ -1,6 +1,16 @@
 # API Fetch 
 
-Communication d'une application Flutter avec une API Rest
+Communication d'une application Flutter avec une API Rest.
+
+Pour Android, modifier le fichier : `./android/app/src/main/AndroidManifest.xml`
+
+Avant la balise <application>, ajouter :
+
+```
+ <uses-permission android:name="android.permission.INTERNET" />
+```
+
+
 
 ## Documentation
 

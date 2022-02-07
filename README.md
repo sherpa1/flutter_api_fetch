@@ -1,6 +1,6 @@
 # API Fetch 
 
-Communication d'une application Flutter avec une API Rest.
+Communication entre une application Flutter et une API REST.
 
 Pour Android, modifier le fichier : `./android/app/src/main/AndroidManifest.xml`
 
@@ -9,8 +9,6 @@ Avant la balise <application>, ajouter :
 ```
  <uses-permission android:name="android.permission.INTERNET" />
 ```
-
-
 
 ## Documentation
 
@@ -21,6 +19,13 @@ Avant la balise <application>, ajouter :
 - JSON & serialization : https://docs.flutter.dev/development/data-and-backend/json
 
 - Firebase : https://docs.flutter.dev/development/data-and-backend/firebase
+
+- JSON Serializable : https://pub.dev/packages/json_serializable
+
+## API REST
+
+https://jsonplaceholder.typicode.com/
+
 
 ---
 

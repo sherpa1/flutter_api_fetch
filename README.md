@@ -26,6 +26,17 @@ Avant la balise <application>, ajouter :
 
 https://jsonplaceholder.typicode.com/
 
+Ressource Task :  
+
+```
+{
+    "userId": 1,
+    "id": 1,
+    "title": "delectus aut autem",
+    "completed": false
+}
+
+```
 
 ---
 

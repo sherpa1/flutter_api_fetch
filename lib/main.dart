@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'dart:async';
 
 void main() {
   runApp(const App());
@@ -15,46 +16,61 @@ class App extends StatelessWidget {
       title: 'Flutter Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
+        dividerColor: Colors.blue,
       ),
-      home: const Master(),
+      home: const TasksMaster(),
     );
   }
 }
 
-class Master extends StatefulWidget {
-  const Master({Key? key}) : super(key: key);
+class TasksMaster extends StatefulWidget {
+  const TasksMaster({Key? key}) : super(key: key);
 
   @override
-  State<Master> createState() => _MasterState();
+  State<TasksMaster> createState() => _TasksMasterState();
 }
 
-class _MasterState extends State<Master> {
-  late List<Task> _tasks = [];
+class _TasksMasterState extends State<TasksMaster> {
+  late final List<Task> _tasks = [];
+
+  String apiEndPoint = "https://jsonplaceholder.typicode.com";
+
+  late Dio dio;
+  late Response response;
+
+  _TasksMasterState() {
+    BaseOptions options = BaseOptions(
+      baseUrl: apiEndPoint,
+      connectTimeout: 5000,
+      receiveTimeout: 3000,
+    );
+    dio = Dio(options);
+  }
 
   @override
   void initState() {
     super.initState();
-    _getTasks();
+    _readAll();
   }
 
-  void _getTasks() async {
+  Future<void> _readAll() async {
     try {
-      final response =
-          await Dio().get('https://jsonplaceholder.typicode.com/todos');
-
-      const List<Task> items = [];
+      response = await dio.request("/todos");
 
       if (response.statusCode == 200) {
-        for (var json in response.data['data']) {
-          var item = Task.fromJson(json);
-          items.add(item);
-        }
-      }
+        for (var record in response.data) {
+          var task = Task.fromJson(record);
 
-      setState(() {
-        _tasks = items;
-      });
+          setState(() {
+            _tasks.add(task);
+          });
+        }
+      } else {
+        // ignore: avoid_print
+        print("error");
+      }
     } catch (e) {
+      // ignore: avoid_print
       print(e);
     }
   }
@@ -89,9 +105,7 @@ class TaskPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: [
-        Text(task.title!),
-      ],
+      children: [Text(task.title!), const Text("demo")],
     );
   }
 }
@@ -104,12 +118,14 @@ class Task {
 
   Task({this.userId, this.id, this.title, this.completed});
 
+  //parse json data given from API to Dart Object
   Task.fromJson(Map<String, dynamic> json)
       : id = json['id'],
         title = json['title'],
         completed = json['completed'],
         userId = json['userId'];
 
+//prepare json data from Dart object to send to API
   Map<String, dynamic> toJson() => {
         'id': id,
         'userId': userId,

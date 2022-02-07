@@ -1,4 +1,4 @@
-# API Fetch 
+# API Fetch / Approche Stateless
 
 Communication entre une application Flutter et une API REST.
 

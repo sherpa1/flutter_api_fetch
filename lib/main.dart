@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'dart:async';
+import 'dart:convert';
+
+//TODO : project structure refactoring : separate each instance into independant file
 
 void main() {
   runApp(const App());
@@ -23,76 +26,91 @@ class App extends StatelessWidget {
   }
 }
 
-class TasksMaster extends StatefulWidget {
-  const TasksMaster({Key? key}) : super(key: key);
-
-  @override
-  State<TasksMaster> createState() => _TasksMasterState();
-}
-
-class _TasksMasterState extends State<TasksMaster> {
-  late final List<Task> _tasks = [];
-
+Future<List<Task>> fetchTasks() async {
   String apiEndPoint = "https://jsonplaceholder.typicode.com";
 
   late Dio dio;
   late Response response;
 
-  _TasksMasterState() {
-    BaseOptions options = BaseOptions(
-      baseUrl: apiEndPoint,
-      connectTimeout: 5000,
-      receiveTimeout: 3000,
-    );
-    dio = Dio(options);
-  }
+  BaseOptions options = BaseOptions(
+    baseUrl: apiEndPoint,
+    connectTimeout: 5000,
+    receiveTimeout: 3000,
+  );
+  dio = Dio(options);
 
-  @override
-  void initState() {
-    super.initState();
-    _readAll();
-  }
+  final List<Task> tasks = [];
 
-  Future<void> _readAll() async {
-    try {
-      response = await dio.request("/todos");
+  try {
+    response = await dio.request("/todos");
 
-      if (response.statusCode == 200) {
-        for (var record in response.data) {
-          var task = Task.fromJson(record);
+    if (response.statusCode == 200) {
+      for (var record in response.data) {
+        var task = Task.fromJson(record);
 
-          setState(() {
-            _tasks.add(task);
-          });
-        }
-      } else {
-        // ignore: avoid_print
-        print("error");
+        tasks.add(task);
       }
-    } catch (e) {
+    } else {
       // ignore: avoid_print
-      print(e);
+      print("error");
     }
+  } catch (e) {
+    // ignore: avoid_print
+    print(e);
   }
+
+  return tasks;
+}
+
+List<Task> parseTasks(String response) {
+  final parsed = jsonDecode(response).cast<Map<String, dynamic>>();
+
+  return parsed.map<Task>((json) => Task.fromJson(json)).toList();
+}
+
+class TasksMaster extends StatelessWidget {
+  const TasksMaster({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    Widget _tasksList() {
-      return ListView.separated(
-        padding: const EdgeInsets.all(0),
-        itemCount: _tasks.length,
-        itemBuilder: (BuildContext context, int index) {
-          return TaskPreview(task: _tasks[index]);
-        },
-        separatorBuilder: (BuildContext context, int index) => const Divider(),
-      );
-    }
-
     return Scaffold(
       appBar: AppBar(
         title: const Text("API Fetch"),
       ),
-      body: _tasksList(),
+      body: FutureBuilder<List<Task>>(
+        future: fetchTasks(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return const Center(
+              child: Text('An error has occurred!'),
+            );
+          } else if (snapshot.hasData) {
+            return TasksList(tasks: snapshot.data!);
+          } else {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+        },
+      ),
+    );
+  }
+}
+
+class TasksList extends StatelessWidget {
+  const TasksList({Key? key, required this.tasks}) : super(key: key);
+
+  final List<Task> tasks;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.separated(
+      padding: const EdgeInsets.all(0),
+      itemCount: tasks.length,
+      itemBuilder: (BuildContext context, int index) {
+        return TaskPreview(task: tasks[index]);
+      },
+      separatorBuilder: (BuildContext context, int index) => const Divider(),
     );
   }
 }
